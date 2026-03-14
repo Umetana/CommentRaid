@@ -94,11 +94,28 @@ const RaidLog = (() => {
     const div = document.createElement("div");
     div.className = "raid-log";
 
-    const match = html.match(/^(.*?)(([：の]))(.*)$/);
-    if (match) {
-      const name = match[1];
-      const sep = match[2];
-      const body = match[4];
+    // --- 改修: 文中の「の」でお名前が途切れないようにロジックを強化 ---
+    let name = "", sep = "", body = "";
+    
+    // 優先順位1: 「：」で区切る（通常のコメント形式）
+    // ※名前の中に「：」が含まれることは稀なため、最初に見つかった箇所で分割
+    const colonIndex = html.indexOf("：");
+    if (colonIndex !== -1) {
+      name = html.substring(0, colonIndex);
+      sep = "：";
+      body = html.substring(colonIndex + 1);
+    } else {
+      // 優先順位2: 「の」で区切る（バトル演出形式: 〇〇の△△！）
+      // ※名前の中に「の」が含まれるケースが多いため、一番最後に出現する「の」で分割する
+      const lastNoIndex = html.lastIndexOf("の");
+      if (lastNoIndex !== -1) {
+        name = html.substring(0, lastNoIndex);
+        sep = "の";
+        body = html.substring(lastNoIndex + 1);
+      }
+    }
+
+    if (sep) {
       const style = color ? ` style="color: ${color}"` : "";
       div.innerHTML = `<span class="name">${name}</span>${sep}<span class="body"${style}>${body}</span>`;
     } else {
@@ -251,55 +268,61 @@ let lastProgress = 1;
 (function setupStatusUiLoop() {
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
-  function tick() {
-    if (window.ENGINE && typeof ENGINE.update === "function") {
-      ENGINE.update();
-    }
-
-    const state = (window.ENGINE && typeof ENGINE.getState === "function") ? ENGINE.getState() : null;
-    const ui = state?.ui?.status;
-    
-    if (ui) {
-      const elLabel = document.getElementById("boss-label");
-      const elFill = document.getElementById("boss-bar-fill");
-      const elLag = document.getElementById("boss-bar-lag");
-      const elHpTxt = document.getElementById("boss-hp-text");
-      const elPanel = document.getElementById("boss-panel");
-
-      const ratio = clamp01(ui.progress ?? 0);
-
-      // 進捗リセット検知
-      if (ratio > lastProgress + 0.1 && elPanel) {
-        elPanel.classList.remove("boss-spawn");
-        void elPanel.offsetWidth;
-        elPanel.classList.add("boss-spawn");
-        if (window.showRaidStamp) window.showRaidStamp("./assets/stamp_start.png");
+    let lastLevel = -1;
+    function tick() {
+      if (window.ENGINE && typeof ENGINE.update === "function") {
+        ENGINE.update();
       }
-      lastProgress = ratio;
 
-      if (elLabel) elLabel.textContent = ui.label || "";
-      if (elFill) {
-        elFill.style.width = `${(ratio * 100).toFixed(2)}%`;
-        if (ui.color) elFill.style.backgroundColor = ui.color;
-      }
-      /* 遅延ゲージ */
-      if (elLag) {
-        if (ratio > lagRatio) lagRatio = ratio;
-        else lagRatio += (ratio - lagRatio) * 0.05;
-        elLag.style.width = `${(lagRatio * 100).toFixed(2)}%`;
-      }
-      if (elHpTxt) elHpTxt.textContent = ui.text || "";
+      const state = (window.ENGINE && typeof ENGINE.getState === "function") ? ENGINE.getState() : null;
+      const ui = state?.ui?.status;
+      
+      if (ui) {
+        const elLabel = document.getElementById("boss-label");
+        const elTitle = document.getElementById("boss-title");
+        const elFill = document.getElementById("boss-bar-fill");
+        const elLag = document.getElementById("boss-bar-lag");
+        const elHpTxt = document.getElementById("boss-hp-text");
+        const elPanel = document.getElementById("boss-panel");
 
-      // 特殊状態演出 (無敵など)
-      if (elPanel) {
-        const isInvincible = performance.now() < (state.invincibleUntil || 0);
-        if (isInvincible) elPanel.classList.add("is-boss-invincible");
-        else elPanel.classList.remove("is-boss-invincible");
+        const ratio = clamp01(ui.progress ?? 0);
+
+        // --- 次ステージ・ボスの出現検知 (V1.1改修) ---
+        const isLevelChanged = (state.level !== lastLevel && lastLevel !== -1);
+        
+        if ((isLevelChanged || ratio > lastProgress + 0.6) && elPanel) {
+          elPanel.classList.remove("boss-spawn");
+          void elPanel.offsetWidth;
+          elPanel.classList.add("boss-spawn");
+          if (window.showRaidStamp) window.showRaidStamp("./assets/stamp_start.png");
+        }
+        lastProgress = ratio;
+        lastLevel = state.level;
+
+        if (elTitle) elTitle.textContent = ui.title || "";
+        if (elLabel) elLabel.textContent = ui.label || "";
+        if (elFill) {
+          elFill.style.width = `${(ratio * 100).toFixed(2)}%`;
+          if (ui.color) elFill.style.backgroundColor = ui.color;
+        }
+        /* 遅延ゲージ */
+        if (elLag) {
+          if (ratio > lagRatio) lagRatio = ratio;
+          else lagRatio += (ratio - lagRatio) * 0.05;
+          elLag.style.width = `${(lagRatio * 100).toFixed(2)}%`;
+        }
+        if (elHpTxt) elHpTxt.textContent = ui.text || "";
+
+        // 特殊状態演出 (無敵など)
+        if (elPanel) {
+          const isInvincible = performance.now() < (state.invincibleUntil || 0);
+          if (isInvincible) elPanel.classList.add("is-boss-invincible");
+          else elPanel.classList.remove("is-boss-invincible");
+        }
       }
+      requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
 
   function showRaidStamp(defaultPath) {
     const el = document.getElementById("raid-stamp");

@@ -1,4 +1,4 @@
-# Comment Raid Base v1.1.0 Technical Specification
+# Comment Raid Base v1.1.1 Technical Specification
 
 本仕様は `comment_raid_base_v1` の **現行実装（engine.js / script.js）** を基準に記述します。  
 ここにない API や hook は「未サポート」です。

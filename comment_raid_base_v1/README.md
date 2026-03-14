@@ -1,6 +1,6 @@
-# Comment Raid Base v1.1.0
+# Comment Raid Base v1.1.1
 
-Comment Raid Base v1.1.0 は、わんコメ向けリアルタイム演出を **Core** と **Rule Pack (Plugin)** に分離した開発基盤です。  
+Comment Raid Base v1.1.1 は、わんコメ向けリアルタイム演出を **Core** と **Rule Pack (Plugin)** に分離した開発基盤です。  
 本ドキュメントは「現在の実装」に合わせて、plugin author が `ctx / hook / manifest` を理解しやすい形で整理しています。
 
 ## 1. 目的
@@ -82,6 +82,8 @@ window.CONFIG = {
 
 ## 7. 更新履歴
 
+- v1.1.1 (2026-03-14)
+  - ログの切り分けロジックを改善（お名前に「の」が含まれるリスナーの表示崩れを修正）
 - v1.1.0 (2026-03-12)
   - 動的 UI/CSS/Script ロード（manifest 方式）を正式化
   - plugin author 向けに責務分離を強化
