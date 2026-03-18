@@ -7,12 +7,14 @@
 
 - `comment_raid_base_v1/`
   - CommentRaid Base 本体
-- `CRB_bossbattle_v1/`
-  - Base を利用する BossBattle テンプレート
 - `CRB_sample_counter/`
-  - Base を利用する最小サンプルテンプレート
+  - Base を利用する最小サンプルプラグイン
+- `CRB_bossbattle_v1/`
+  - Base を利用する BossBattle プラグイン
+- `CRB_idolonstage_v1/`
+  - Base を利用する アイドル応援風演出 プラグイン
 
-`CRB_bossbattle_v1` と `CRB_sample_counter` は、`comment_raid_base_v1` と同じ階層に置いて使う前提です。  
+各プラグインは、`comment_raid_base_v1` と同じ階層に置いて使う前提です。  
 派生フォルダ単体では動作しません。
 
 ## ライセンスについて
