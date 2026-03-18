@@ -288,16 +288,22 @@ let lastProgress = 1;
         const ratio = clamp01(ui.progress ?? 0);
 
         // --- 次ステージ・ボスの出現検知 (V1.1改修) ---
-        const isLevelChanged = (state.level !== lastLevel && lastLevel !== -1);
+        const isLevelChanged = (state.level !== lastLevel);
         
         if ((isLevelChanged || ratio > lastProgress + 0.6) && elPanel) {
           elPanel.classList.remove("boss-spawn");
           void elPanel.offsetWidth;
           elPanel.classList.add("boss-spawn");
           if (window.showRaidStamp) window.showRaidStamp("./assets/stamp_start.png");
+
+          // UIへの反映が完了したタイミングで記録を更新（起動時の取りこぼし防止）
+          lastProgress = ratio;
+          lastLevel = state.level;
+        } else if (elPanel) {
+          // UIは存在するが変化がない通常の追従
+          lastProgress = ratio;
+          lastLevel = state.level;
         }
-        lastProgress = ratio;
-        lastLevel = state.level;
 
         if (elTitle) elTitle.textContent = ui.title || "";
         if (elLabel) elLabel.textContent = ui.label || "";
