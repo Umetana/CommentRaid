@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommentRaid - Idol On Stage v1 Config Editor</title>
+    <style>
+        :root {
+            --bg-color: #0a0e14;
+            --panel-bg: #151c27;
+            --text-color: #e2e8f0;
+            --accent-color: #ec4899;
+            /* Idol Pink */
+            --accent-glow: rgba(236, 72, 153, 0.4);
+            --border-color: #2d3748;
+            --input-bg: #0a0e14;
+            --tab-inactive: #1a202c;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: var(--panel-bg);
+            padding: 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        header {
+            padding: 30px;
+            background: linear-gradient(to right, #1e293b, #151c27);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin: 0;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-import {
+            background: #2d3748;
+            color: #63b3ed;
+            border: 1px solid #63b3ed;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-import:hover {
+            background: #2c5282;
+            color: white;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--tab-inactive);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #718096;
+            font-weight: bold;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-button.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+            background: var(--panel-bg);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Forms */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #cbd5e0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45%, 1fr));
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid transparent;
+        }
+
+        .field:hover {
+            border-color: var(--border-color);
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #a0aec0;
+        }
+
+        .help {
+            font-size: 0.75rem;
+            color: #718096;
+        }
+
+        input,
+        select,
+        textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* List Management */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .list-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .btn-add {
+            background: #2d3748;
+            color: #48bb78;
+            border: 1px solid #48bb78;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-remove {
+            background: rgba(245, 101, 101, 0.1);
+            color: #f56565;
+            border: 1px solid #f56565;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Actions */
+        .footer-actions {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-save {
+            background: var(--accent-color);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>CommentRaid - Idol On Stage v1 設定エディタ</h1>
+            <div class="header-controls">
+                <button class="btn-import" title="既存のJSファイルを読み込んで編集します"
+                    onclick="document.getElementById('file-input').click()">
+                    JSファイルを読込
+                </button>
+                <input type="file" id="file-input" accept=".js" style="display: none"
+                    onchange="handleFileImport(event)">
+            </div>
+        </header>
+        <div class="note">※このツールは設定ファイル生成の補助ツールです。<br>
+            ※生成されたファイルは data や plugins/data フォルダ内に保存してください。</div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('general')">基本設定 (config.js)</button>
+            <button class="tab-button" onclick="showTab('idol-general')">アイドル設定 (idol_config.js)</button>
+            <button class="tab-button" onclick="showTab('attacks')">応援リスト (cheer_table.js)</button>
+            <button class="tab-button" onclick="showTab('skills')">配信者スキル (idol_skill_data.js)</button>
+            <button class="tab-button" onclick="showTab('titles')">アイドル称号 (idol_profile.js)</button>
+        </div>
+
+        <!-- General Config -->
+        <div id="tab-general" class="tab-content active">
+            <div class="section-header">
+                <div class="section-title">基本システム設定 (data/config.js)</div>
+            </div>
+            <div class="grid" id="config-fields">
+                <!-- JSで生成 -->
+            </div>
+            <div class="footer-actions">
+                <button class="btn-save" onclick="downloadConfig()">config.js を保存</button>
+            </div>
+        </div>
+
+        <!-- Idol Config -->
+        <div id="tab-idol-general" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">アイドル特別設定 (data/idol_config.js)</div>
+            </div>
+            <div class="grid" id="idol-config-fields">
+                <!-- JSで生成 -->
+            </div>
+            <div class="footer-actions">
+                <button class="btn-save" onclick="downloadIdolConfig()">idol_config.js を保存</button>
+            </div>
+        </div>
+
+        <!-- Cheer Table -->
+        <div id="tab-attacks" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">応援アクション設定 (plugins/data/cheer_table.js)</div>
+                <button class="btn-add" onclick="addItem('attack')">+ 応援を追加</button>
+            </div>
+            <div class="list-container" id="attack-list">
+                <!-- JSで生成 -->
+            </div>
+            <div class="footer-actions">
+                <button class="btn-save" onclick="downloadAttacks()">cheer_table.js を保存</button>
+            </div>
+        </div>
+
+        <!-- Idol Skills -->
+        <div id="tab-skills" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">配信者スキル設定 (plugins/data/idol_skill_data.js)</div>
+                <button class="btn-add" onclick="addItem('skill')">+ スキルを追加</button>
+            </div>
+            <div class="list-container" id="skill-list">
+                <!-- JSで生成 -->
+            </div>
+            <div class="footer-actions">
+                <button class="btn-save" onclick="downloadSkills()">idol_skill_data.js を保存</button>
+            </div>
+        </div>
+
+        <!-- Idol Titles -->
+        <div id="tab-titles" class="tab-content">
+            <div class="section-header">
+                <div class="section-title">二つ名リスト (例: 駆け出しの)</div>
+                <button class="btn-add" onclick="addItem('epithet')">+ 追加</button>
+            </div>
+            <div class="list-container" id="epithet-list"></div>
+
+            <div class="section-header" style="margin-top: 40px;">
+                <div class="section-title">役職リスト (例: アイドル)</div>
+                <button class="btn-add" onclick="addItem('role')">+ 追加</button>
+            </div>
+            <div class="list-container" id="role-list"></div>
+
+            <div class="footer-actions">
+                <button class="btn-save" onclick="downloadTitles()">idol_profile.js を保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 定義 ---
+        const CONFIG_SCHEMA = [
+            { id: 'HIDE_DEFAULT_COMMENTS', label: '標準コメ表示を隠す', type: 'boolean', help: '動作チェック用。デフォルトON。OFFで標準コメも表示' },
+            { id: 'MAX_ACTIVE', label: '最大アクティブ数', type: 'number' },
+            { id: 'FONT_SIZE', label: 'フォントサイズ', type: 'number' },
+            { id: 'FX_INTENSITY', label: '演出強度倍率', type: 'number', help: '1.0で標準' },
+            { id: 'USE_USER_COLOR', label: 'ユーザーカラー反映', type: 'boolean' },
+            { id: 'SAVE_PROGRESS', label: '進行状況を保存', type: 'boolean' },
+            { id: 'RESET_PROGRESS', label: '進捗をリセット', type: 'boolean' },
+            { id: 'LOG_CENTER_OFFSET', label: 'ログ位置オフセット (%)', type: 'number', help: '中央基準。-50で真ん中' },
+            { id: 'LOG_PADDING_LEFT', label: 'ログ左余白 (px)', type: 'number' },
+            { id: 'DEBUG', label: 'デバッグモード', type: 'boolean' }
+        ];
+
+        const IDOL_CONFIG_SCHEMA = [
+            { id: 'IDOL_NAME', label: '配信者の基本名', type: 'text' },
+            { id: 'IDOL_TITLE_MODE', label: '称号モード', type: 'select', options: ['random', 'byLevel', 'fixed'] },
+            { id: 'IDOL_TITLE_FIXED', label: '固定称号 (fixed時)', type: 'text' },
+            { id: 'NEXT_STAGE_INTERVAL_MS', label: 'レベルアップ後待機時間 (ms)', type: 'number', help: 'デフォルト 6000' },
+            { id: 'DIFFICULTY', label: '難易度プリセット', type: 'select', options: ['normal', 'hard', 'nightmare', 'impossible', 'custom'] },
+
+            { id: 'BASE_VOLTAGE', label: '（custom時）初期VOLTAGE', type: 'number' },
+            { id: 'VOLTAGE_PER_LEVEL', label: '（custom時）追加VOLTAGE', type: 'number' },
+            { id: 'VOLTAGE_GROWTH_RATE', label: '（custom時）成長係数', type: 'number' },
+
+            { id: 'USE_STAMP', label: 'スタンプ演出を使う', type: 'boolean' },
+            { id: 'STAMP_START_URL', label: '開始スタンプ画像', type: 'text' },
+            { id: 'STAMP_DEFEAT_URL', label: '完了スタンプ画像', type: 'text' },
+
+            { id: 'CHEER_EMOJI', label: '応援時の絵文字', type: 'text' },
+            { id: 'CHEER_EMOJI_COUNT', label: '通常コメ時出現数', type: 'number' },
+            { id: 'CHEER_EMOJI_GIFT_COUNT', label: 'ギフト時出現数', type: 'number' },
+            { id: 'MAX_ACTIVE_EFFECTS', label: '最大エフェクト数', type: 'number' },
+
+            { id: 'LOG_FORMAT', label: 'ログ形式', type: 'select', options: ['battle_1line', 'name_comment'], help: 'battle_1lineでスキル表示、name_commentで通常コメント表示' },
+            { id: 'MAX_LOG_CHARS', label: '最大ログ文字数', type: 'number' },
+            { id: 'MAX_LOG_LINES', label: '最大ログ行数', type: 'number' },
+            { id: 'LOG_SCROLL_SPEED', label: 'ログスクロール速度', type: 'number' },
+            { id: 'LOG_SHOW_EMOJI', label: 'ログに絵文字を表示', type: 'boolean' },
+            { id: 'LOG_USE_USER_COLOR', label: 'ログにユーザー色反映', type: 'boolean' },
+            { id: 'LOG_USE_GIFT_COLOR', label: 'ログにギフト色反映', type: 'boolean' }
+        ];
+
+        let state = {
+            config: {},
+            idolConfig: {},
+            attacks: [],
+            skills: [],
+            epithets: [],
+            roles: [],
+            lastFilenames: {
+                config: 'config.js',
+                idolConfig: 'idol_config.js',
+                attacks: 'cheer_table.js',
+                skills: 'idol_skill_data.js',
+                titles: 'idol_profile.js'
+            }
+        };
+
+        // --- 1.5. ファイル読込 ---
+        function getBalanced(str, startChar, endChar) {
+            let count = 0;
+            let started = false;
+            for (let i = 0; i < str.length; i++) {
+                if (str[i] === startChar) {
+                    count++;
+                    started = true;
+                } else if (str[i] === endChar) {
+                    count--;
+                }
+                if (started && count === 0) return str.substring(0, i + 1);
+            }
+            return null;
+        }
+
+        function extractValue(content, varName) {
+            const regex = new RegExp(`window\\.${varName}\\s*=\\s*`);
+            const match = content.match(regex);
+            if (!match) return null;
+            const startIdx = match.index + match[0].length;
+            const sub = content.substring(startIdx).trim();
+            const firstChar = sub[0];
+            if (firstChar !== '{' && firstChar !== '[') return null;
+            const endChar = (firstChar === '{') ? '}' : ']';
+            return getBalanced(sub, firstChar, endChar);
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                try {
+                    let imported = false;
+
+                    const configStr = extractValue(content, 'CONFIG');
+                    if (configStr) {
+                        state.config = { ...state.config, ...eval("(" + configStr + ")") };
+                        renderConfig();
+                        state.lastFilenames.config = file.name;
+                        imported = true;
+                    }
+
+                    const idolConfigStr = extractValue(content, 'CONFIG_IDOL');
+                    if (idolConfigStr) {
+                        state.idolConfig = { ...state.idolConfig, ...eval("(" + idolConfigStr + ")") };
+                        renderIdolConfig();
+                        state.lastFilenames.idolConfig = file.name;
+                        imported = true;
+                    }
+
+                    const attackStr = extractValue(content, 'CHEER_TABLE');
+                    if (attackStr) {
+                        state.attacks = eval("(" + attackStr + ")");
+                        renderAttacks();
+                        state.lastFilenames.attacks = file.name;
+                        imported = true;
+                    }
+
+                    const skillStr = extractValue(content, 'IDOL_SKILL');
+                    if (skillStr) {
+                        state.skills = eval("(" + skillStr + ")");
+                        renderSkills();
+                        state.lastFilenames.skills = file.name;
+                        imported = true;
+                    }
+
+                    const epithetsStr = extractValue(content, 'IDOL_EPITHETS');
+                    const rolesStr = extractValue(content, 'IDOL_ROLES');
+                    if (epithetsStr || rolesStr) {
+                        if (epithetsStr) state.epithets = eval("(" + epithetsStr + ")");
+                        if (rolesStr) state.roles = eval("(" + rolesStr + ")");
+                        renderTitles();
+                        state.lastFilenames.titles = file.name;
+                        imported = true;
+                    }
+
+                    if (imported) {
+                        setTimeout(() => {
+                            alert(file.name + " を読み込みました。");
+                        }, 50);
+                    } else {
+                        alert("読み込める設定（window.CONFIG, CONFIG_IDOL等）が見つかりませんでした。");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("ファイルの読み込み中にエラーが発生しました。");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // --- 2. タブ切り替え ---
+        function showTab(id) {
+            const btn = document.querySelector(`.tab-button[onclick*="${id}"]`);
+            const content = document.getElementById(`tab-${id}`);
+            if (!btn || !content) return;
+
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            content.classList.add('active');
+        }
+
+        // --- 3. 初期化 & 描画 ---
+        function init() {
+            state.config = JSON.parse(JSON.stringify(window.CONFIG || {}));
+            state.idolConfig = JSON.parse(JSON.stringify(window.CONFIG_IDOL || {}));
+            state.attacks = JSON.parse(JSON.stringify(window.CHEER_TABLE || []));
+            state.skills = JSON.parse(JSON.stringify(window.IDOL_SKILL || []));
+            state.epithets = JSON.parse(JSON.stringify(window.IDOL_EPITHETS || []));
+            state.roles = JSON.parse(JSON.stringify(window.IDOL_ROLES || []));
+
+            renderConfig();
+            renderIdolConfig();
+            renderAttacks();
+            renderSkills();
+            renderTitles();
+        }
+
+        function renderFields(containerId, schemaList, stateObj, updateFuncName) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = schemaList.map(f => {
+                const val = stateObj[f.id] ?? '';
+                let inputHtml = '';
+                if (f.type === 'select') {
+                    inputHtml = `<select onchange="${updateFuncName}('${f.id}', this.value)">
+                        ${f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('')}
+                    </select>`;
+                } else if (f.type === 'boolean') {
+                    inputHtml = `<input type="checkbox" ${val ? 'checked' : ''} onchange="${updateFuncName}('${f.id}', this.checked)">`;
+                } else {
+                    inputHtml = `<input type="${f.type}" value="${val}" oninput="${updateFuncName}('${f.id}', this.value)">`;
+                }
+
+                return `<div class="field">
+                    <label>${f.label}</label>
+                    ${inputHtml}
+                    ${f.help ? `<div class="help">${f.help}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function renderConfig() {
+            renderFields('config-fields', CONFIG_SCHEMA, state.config, 'updateConfig');
+        }
+
+        function renderIdolConfig() {
+            renderFields('idol-config-fields', IDOL_CONFIG_SCHEMA, state.idolConfig, 'updateIdolConfig');
+        }
+
+        function renderAttacks() {
+            const container = document.getElementById('attack-list');
+            container.innerHTML = state.attacks.map((a, i) => `
+                <div class="list-item">
+                    <input type="text" value="${a.name}" placeholder="応援名" oninput="updateItem('attack', ${i}, 'name', this.value)">
+                    <input type="number" step="0.1" value="${a.power}" placeholder="倍率" style="width: 80px" oninput="updateItem('attack', ${i}, 'power', this.value)">
+                    <input type="text" value="${a.command || ''}" placeholder="!command" style="width: 100px" oninput="updateItem('attack', ${i}, 'command', this.value)">
+                    <button class="btn-remove" onclick="removeItem('attack', ${i})">削除</button>
+                </div>
+            `).join('');
+        }
+
+        function renderSkills() {
+            const container = document.getElementById('skill-list');
+            container.innerHTML = state.skills.map((s, i) => `
+                <div class="list-item">
+                    <input type="text" value="${s.command}" placeholder="!cmd" style="width: 80px" oninput="updateItem('skill', ${i}, 'command', this.value)">
+                    <input type="text" value="${s.name}" placeholder="表示名" oninput="updateItem('skill', ${i}, 'name', this.value)">
+                    <input type="number" step="0.1" value="${s.multiplier}" placeholder="倍率" style="width: 60px" oninput="updateItem('skill', ${i}, 'multiplier', this.value)">
+                    <input type="number" step="1" value="${s.duration}" placeholder="効果ms" style="width: 80px" oninput="updateItem('skill', ${i}, 'duration', this.value)">
+                    <input type="number" step="1" value="${s.limit}" placeholder="回数" style="width: 40px" oninput="updateItem('skill', ${i}, 'limit', this.value)">
+                    <input type="number" step="1" value="${s.cooldown}" placeholder="冷却ms" style="width: 80px" oninput="updateItem('skill', ${i}, 'cooldown', this.value)">
+                    <button class="btn-remove" onclick="removeItem('skill', ${i})">削除</button>
+                </div>
+            `).join('');
+        }
+
+        function renderTitles() {
+            document.getElementById('epithet-list').innerHTML = state.epithets.map((v, i) => `
+                <div class="list-item">
+                    <input type="text" value="${v}" oninput="updateItem('epithet', ${i}, null, this.value)">
+                    <button class="btn-remove" onclick="removeItem('epithet', ${i})">削</button>
+                </div>
+            `).join('');
+            document.getElementById('role-list').innerHTML = state.roles.map((v, i) => `
+                <div class="list-item">
+                    <input type="text" value="${v}" oninput="updateItem('role', ${i}, null, this.value)">
+                    <button class="btn-remove" onclick="removeItem('role', ${i})">削</button>
+                </div>
+            `).join('');
+        }
+
+        // --- 4. データ更新 ---
+        function updateConfig(id, val) {
+            const schema = CONFIG_SCHEMA.find(s => s.id === id);
+            if (schema && schema.type === 'number') val = parseFloat(val) || 0
+            state.config[id] = val;
+        }
+
+        function updateIdolConfig(id, val) {
+            const schema = IDOL_CONFIG_SCHEMA.find(s => s.id === id);
+            if (schema && schema.type === 'number') val = parseFloat(val) || 0
+            state.idolConfig[id] = val;
+        }
+
+        function updateItem(type, index, key, val) {
+            if (type === 'attack') {
+                if (key === 'power') val = parseFloat(val);
+                state.attacks[index][key] = val;
+            } else if (type === 'skill') {
+                if (key === 'multiplier') val = parseFloat(val);
+                if (key === 'duration' || key === 'limit' || key === 'cooldown') val = parseInt(val);
+                state.skills[index][key] = val;
+            } else {
+                state[type + 's'][index] = val;
+            }
+        }
+
+        function addItem(type) {
+            if (type === 'attack') state.attacks.push({ name: "New Cheer", power: 1.0, command: "" });
+            else if (type === 'skill') state.skills.push({ command: "!new", name: "新規スキル", multiplier: 1.5, duration: 30000, limit: 3, cooldown: 30000 });
+            else state[type + 's'].push("新規");
+            renderAttacks();
+            renderSkills();
+            renderTitles();
+        }
+
+        function removeItem(type, index) {
+            if (type === 'attack') state.attacks.splice(index, 1);
+            else if (type === 'skill') state.skills.splice(index, 1);
+            else state[type + 's'].splice(index, 1);
+            renderAttacks();
+            renderSkills();
+            renderTitles();
+        }
+
+        // --- 5. 保存 (ダウンロード) ---
+        function saveFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadConfig() {
+            let base = window.CONFIG || {};
+            for (let key in state.config) {
+                const schema = CONFIG_SCHEMA.find(s => s.id === key);
+                if (schema && schema.type === 'number') state.config[key] = parseFloat(state.config[key]);
+            }
+            let merged = { ...base, ...state.config };
+            let content = "// config.js (Generated)\nwindow.CONFIG = " + JSON.stringify(merged, null, 2) + ";\n\n";
+
+            content += `// CSS変数制御
+if (window.CONFIG.HIDE_DEFAULT_COMMENTS !== undefined) {
+  document.documentElement.style.setProperty('--show-comments', window.CONFIG.HIDE_DEFAULT_COMMENTS ? 'none' : 'block');
+}
+`;
+            saveFile(state.lastFilenames.config, content);
+        }
+
+        function downloadIdolConfig() {
+            let base = window.CONFIG_IDOL || {};
+            for (let key in state.idolConfig) {
+                const schema = IDOL_CONFIG_SCHEMA.find(s => s.id === key);
+                if (schema && schema.type === 'number') state.idolConfig[key] = parseFloat(state.idolConfig[key]);
+            }
+            let merged = { ...base, ...state.idolConfig };
+            let content = "// idol_config.js (Generated)\nwindow.CONFIG_IDOL = " + JSON.stringify(merged, null, 2) + ";\n\n";
+
+            content += `// 専用設定の自動適用ロジック
+(function applyIdolDifficulty() {
+  const cfg = window.CONFIG_IDOL;
+  const mode = cfg.DIFFICULTY;
+
+  if (mode !== "custom" && cfg.PRESETS && cfg.PRESETS[mode]) {
+    const selectedPreset = cfg.PRESETS[mode];
+    Object.keys(selectedPreset).forEach(key => {
+      cfg[key] = selectedPreset[key];
+    });
+    console.log("[IdolConfig] Applied difficulty: " + mode);
+  }
+
+  // Engine compatibility bridge
+  window.CONFIG_RAID = window.CONFIG_IDOL;
+})();
+`;
+            saveFile(state.lastFilenames.idolConfig, content);
+        }
+
+        function downloadAttacks() {
+            let content = "// cheer_table.js (Generated)\nwindow.CHEER_TABLE = " + JSON.stringify(state.attacks, null, 2) + ";\n";
+            saveFile(state.lastFilenames.attacks, content);
+        }
+
+        function downloadSkills() {
+            let content = "// idol_skill_data.js (Generated)\nwindow.IDOL_SKILL = " + JSON.stringify(state.skills, null, 2) + ";\n";
+            saveFile(state.lastFilenames.skills, content);
+        }
+
+        function downloadTitles() {
+            let content = "// idol_profile.js (Generated)\n";
+            content += "window.IDOL_EPITHETS = " + JSON.stringify(state.epithets, null, 2) + ";\n";
+            content += "window.IDOL_ROLES = " + JSON.stringify(state.roles, null, 2) + ";\n\n";
+
+            content += `// レベルに応じて合成（循環）
+window.pickIdolTitle = function (level) {
+  const e = window.IDOL_EPITHETS || [];
+  const r = window.IDOL_ROLES || [];
+  if (!e.length && !r.length) return "アイドル";
+  if (!e.length) return r[(Math.max(0, (level | 0) - 1)) % r.length];
+  if (!r.length) return e[(Math.max(0, (level | 0) - 1)) % e.length] + "アイドル";
+
+  const i = Math.max(0, (level | 0) - 1);
+  const epithet = e[i % e.length];
+  const role = r[(i * 3) % r.length]; 
+  return \`\${epithet}\${role}\`;
+};
+
+// ランダム
+window.pickIdolTitleRandom = function () {
+  const e = window.IDOL_EPITHETS || [];
+  const r = window.IDOL_ROLES || [];
+  const epithet = e.length ? e[Math.floor(Math.random() * e.length)] : "";
+  const role = r.length ? r[Math.floor(Math.random() * r.length)] : "アイドル";
+  return \`\${epithet}\${role}\`;
+};`;
+
+            saveFile(state.lastFilenames.titles, content);
+        }
+    </script>
+
+    <!-- 各ファイルを読み込んで初期値を反映 -->
+    <script src="./data/config.js"></script>
+    <script src="./data/idol_config.js"></script>
+    <script src="./plugins/data/cheer_table.js"></script>
+    <script src="./plugins/data/idol_profile.js"></script>
+    <script src="./plugins/data/idol_skill_data.js"></script>
+    <script>
+        window.addEventListener('load', () => setTimeout(init, 200));
+    </script>
+</body>
+
+</html>
